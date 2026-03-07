@@ -1,0 +1,11 @@
+
+#Install HELM
+
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+helm install myapp ./myapp-canary-chart/ #To deploy your app
+
+
+
+
+

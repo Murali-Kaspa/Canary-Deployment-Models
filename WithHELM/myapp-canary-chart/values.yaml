@@ -1,0 +1,15 @@
+stable:
+  replicaCount: 3
+  image: nginx:1.25
+
+canary:
+  replicaCount: 1
+  image: httpd
+  weight: 80
+
+service:
+  port: 80
+
+ingress:
+  className: nginx
+  #host: myapp.example.com
