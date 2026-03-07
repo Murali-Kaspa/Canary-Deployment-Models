@@ -65,6 +65,11 @@ Traffic distribution is controlled by ingress weight, not by pod count.
 We can check the NGINX ingress controller logs.
 Example command:
 kubectl logs -n ingress-nginx <ingress-controller-pod>
+
+kubectl logs ingress-nginx-controller-6f994997f7-dzk89 -n ingress-nginx | grep myapp-canary-service | wc -l #SHOWS CANARY HITS
+kubectl logs ingress-nginx-controller-6f994997f7-dzk89 -n ingress-nginx | grep myapp-stable-service | wc -l #SHOWS STABLE HITS
+
+
 In the logs we can see:
 which service handled the request
 which pod IP served the request
