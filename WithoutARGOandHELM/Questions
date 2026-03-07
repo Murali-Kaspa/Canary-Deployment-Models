@@ -1,0 +1,88 @@
+FLOW:
+
+User
+ ↓
+DNS (Route53)
+ ↓
+AWS Load Balancer
+ ↓
+NGINX Ingress Controller
+ ↓
+ ├── Stable Service
+ │      └── Stable Pods
+ │
+ └── Canary Service
+        └── Canary Pods
+
+1. Why do we use two deployments in Canary deployment?
+
+We use two deployments to run two versions of the application:
+Stable deployment → current production version
+Canary deployment → new version that we want to test
+This allows us to gradually expose users to the new version without affecting everyone.
+
+2. Why do we use two services?
+
+We create two services to separate stable and canary pods.
+Stable service selects pods with label version: stable
+Canary service selects pods with label version: canary
+This separation allows the ingress controller to route traffic independently to each version.
+
+If we used only one service, Kubernetes would randomly distribute traffic across all pods, and we would lose control over traffic splitting.
+
+3. Why do we use two ingress resources?
+
+We use two ingress resources because NGINX ingress implements canary deployment using annotations.
+Primary ingress → routes normal traffic to the stable service
+Canary ingress → routes a percentage of traffic to the canary service
+
+The canary ingress contains annotations like:
+nginx.ingress.kubernetes.io/canary: "true"
+nginx.ingress.kubernetes.io/canary-weight: "15"
+
+This means 15% of traffic goes to the canary version.
+
+4. Does canary deployment create new pods automatically?
+
+No. Canary deployment does not create new pods automatically.
+Pod creation is controlled by the deployment replicas.
+Ingress only splits the traffic between stable and canary services.
+
+5. What happens if canary weight is set to 50?
+
+If:
+Stable replicas = 3
+Canary replicas = 1
+Canary weight = 50
+
+Then:
+50% traffic goes to the canary pod
+50% traffic goes to the three stable pods
+Traffic distribution is controlled by ingress weight, not by pod count.
+
+6. How do we verify that canary deployment is working?
+
+We can check the NGINX ingress controller logs.
+Example command:
+kubectl logs -n ingress-nginx <ingress-controller-pod>
+In the logs we can see:
+which service handled the request
+which pod IP served the request
+
+This confirms that traffic is being split between stable and canary services.
+
+7. Can we use a Service of type LoadBalancer for Canary deployment?
+
+Technically yes, we can use it, but it is not recommended for canary deployments.
+If we use LoadBalancer services, each service will create a separate external load balancer and it causes below probelms.
+
+Problems:
+Two public endpoints
+No traffic control
+Higher cost
+Hard to manage
+
+8. Who creates the AWS Load Balancer in an Ingress architecture?
+
+The AWS Load Balancer is created by the ingress controller service, which is typically of type LoadBalancer. 
+Kubernetes automatically provisions an external load balancer in AWS and attaches it to the ingress controller. PFA flow chart.
