@@ -91,3 +91,8 @@ Hard to manage
 
 The AWS Load Balancer is created by the ingress controller service, which is typically of type LoadBalancer. 
 Kubernetes automatically provisions an external load balancer in AWS and attaches it to the ingress controller. PFA flow chart.
+
+9.Why do we use ClusterIP service when using Ingress?
+
+We use ClusterIP because it provides a stable internal endpoint for the Ingress controller. Pods are dynamic and their IPs change frequently, 
+so the service acts as an internal load balancer that routes traffic to the available pods while maintaining a single stable IP inside the cluster.
