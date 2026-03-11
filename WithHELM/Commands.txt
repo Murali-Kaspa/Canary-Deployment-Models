@@ -7,5 +7,22 @@ helm install myapp ./myapp-canary-chart/ #To deploy your app
 
 
 
+#Installing Prometheus and Grafana
 
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install prometheus prometheus-community/kube-prometheus-stack
+helm repo update
+
+kubectl create namespace monitoring
+
+helm install monitoring prometheus-community/kube-prometheus-stack \
+-n monitoring
+kubectl get pods -n monitoring
+kubectl get svc -n monitoring
+
+kubectl edit svc monitoring-grafana -n monitoring  #Change the type from ClusterIP to LoadBalancer
+kubectl edit svc monitoring-kube-prometheus-prometheus -n monitoring #Change the type from ClusterIP to LoadBalancer
+
+kubectl get secret monitoring-grafana -n monitoring \
+-o jsonpath="{.data.admin-password}" | base64 --decode # To Get the pwd.
 
